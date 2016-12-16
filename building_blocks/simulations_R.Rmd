@@ -1,0 +1,114 @@
+---
+title: "Simulation"
+author: "Kyle MacDonald"
+date: "12/15/2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 4.5, fig.height = 4, fig.align = "center")
+library(tidyverse)
+theme_set(theme_classic())
+```
+
+## Simulating distributions in R
+
+By the end of the document, you will be able to: 
+
+* explain the value of simulating data and analysis in R
+* use a variety of different methods for generating your own data using R's built-in random number generators
+
+### Why simulate data?
+
+Two major advantages for simulating data are the ability to:
+
+* Test your statistical intuitions
+* Experiment with a new technique on known data
+
+### Setting the seed
+
+By design, simulations in R are generated randomly. But sometimes you want to reproduce a set of simulations. To do this, you need to use the `set.seed()` function. Compare the output of the following two code chunks:
+
+```{r}
+c(rnorm(n = 1, mean = 5, sd = 3), rnorm(n = 1, mean = 5, sd = 3))
+```
+
+```{r}
+set.seed(45)
+c(rnorm(n = 1, mean = 5, sd = 3), rnorm(n = 1, mean = 5, sd = 3))
+```
+
+```{r}
+set.seed(45)
+c(rnorm(n = 1, mean = 5, sd = 3), rnorm(n = 1, mean = 5, sd = 3))
+```
+
+### Generating samples from probability distributions
+
+First argument is always the number of samples to generate `n`. Then you provide the parameters of the distribution 
+
+* `rnorm(n, ...)` 
+* `rpois(n, ...)`
+* `rbeta(n, ...)`
+* `runif((n, ...))`
+* `rbinom((n, ...))`
+
+### Don't reapeat yourself!
+
+The golden rule of functional programming is "Don't repeat yourself!" If you find yourself writing the same code more than once, then it is time to abstract and make that code into a function. 
+
+```{r}
+sim_hist_plot <- function(vect, bins = 30) {
+  if (is.data.frame(data) == F) {
+    data <- as.data.frame(vect)
+  }
+  
+  ggplot(aes(x = vect), data = data) +
+    geom_histogram(bins = bins)
+}
+```
+
+```{r}
+sim_hist_plot(rnorm(n = 10000, m = 0, sd = 1), bins = 100)
+```
+
+### Repetition
+
+To repeat stuff, we can use the `replicate()` function, which takes two arguments:
+
+* `n` the number of times to do the thing
+* `expr` the thing to do
+
+For example, we can write one line of code that can generate a sample (any size we choose) from a uniform distribution, take the mean of each sample, and plot those means as a histogram. 
+
+```{r}
+qplot(replicate(1000, mean(runif(1000, 0, 10))), geom= "histogram", bins = 30)
+```
+
+But what if we want to do this with other types of distributions? Well, we can extend or make a more general version of this function. 
+
+```{r}
+sim_means_plot <- function(n_rep, n_samp, d, size, m = 0, 
+                           sd = 1, prob = 0.5, min = 0, max = 1,
+                           lambda = 1) {
+  
+  sims <- switch(d,
+         normal = replicate(n_rep, mean(rnorm(n = n_samp, m = m, sd = sd))),
+         binomial = replicate(n_rep, mean(rbinom(n = n_samp, size = size, prob = prob))),
+         uniform = replicate(n_rep, mean(runif(n = n_samp, min = min, max = max))),
+         poisson = replicate(n_rep, mean(rpois(n = n_samp, lambda = lambda)))
+         ) %>%  
+    as.data.frame() 
+  
+  names(sims) <- "value"
+  
+  ggplot(aes(x = value), data = sims) +
+    geom_histogram()
+}
+```
+
+Let's test the function.
+
+```{r}
+sim_means_plot(n_rep = 10000, n_samp = 100, d = "poisson", lambda = 1)
+```

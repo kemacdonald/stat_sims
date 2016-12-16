@@ -1,0 +1,122 @@
+---
+title: "T-test Simulation"
+author: "Kyle MacDonald"
+date: "12/16/2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Statistical intuition pumps
+
+Using the basic tools that we have added to our simulation toolkit, we can start writing code to improve our statistical intuitions. 
+
+### The t-test (what, why, and how)
+
+The t.test refers to a widely-used set of statistical tools that help us to determine whether two values are "actually" different from each other. (Note the "actually" part will become more clear when we dive into the topic of p-values.) It was developed by William Gosset as a method of statistical quality control to monitor the quality of stout production (there's a neat backstory that I recommend reading!). 
+
+#### How to compute a t-statistic?
+
+The algorithm for computing a t-statistic is as follows:
+
+* First, we need to determine the null and the alternative hypothesis. This will depend on the type of comparison you want to make. For example, Let's imagine that you have taken a series of measures on a single group (e.g., NBA players' heights). You might be interested in testing whether the average height of an NBA player is different from the average height of the general population in the United States. In this scenario, your null hypothesis, $H_0$, is that the average heights are not different from each other, and your alternative hypothesis, $H_a$, is that the two groups are different. (IMPORTANT: here we are just saying that the groups could be different in some way, meaning the NBA players could be shorter OR taller on average.)
+
+* Second, we need to compute the values that will be in the input to the t-test computation. Here is the formula for a one-sample t-test:
+
+$$t = \frac{\bar{x} - u_0} {s / \sqrt{n}}$$
+
+Let's code up the one-sample t-test as a function.
+
+```{r}
+t_test_fun <- function(measurements, null_val) {
+  xbar <- mean(measurements)
+  s <- sd(measurements)
+  n <- length(measurements)
+  # compute t-statistic
+  (xbar - null_val) / (s / sqrt(n))
+  
+}
+```
+
+Let's try our t-test function and compare the output ot R's built-in `t.test()` function.
+
+```{r}
+# simulate some data as samples from a normal distribution
+samples <- rnorm(n = 100, mean = 6, sd = 1.5)
+our_t <- t_test_fun(measurements = samples, null_val = 6)
+
+# R's built-in t-test function
+Rs_t <- t.test(x = samples, mu = 6)$statistic
+```
+
+Our t-statistic is `r our_t` and R's is `r Rs_t`. Nice! Our function worked and returned the expected t-statistic. 
+
+But a t-statistic by itself is not all that useful in helping us to decide whether there is a difference between our measurements and the null value. In the next section, we will show how to use a t-statistic to make decisions (draw inferences) about our data.
+
+### How do we use a t-statistic?
+
+To understand how we use a t-statistic, we need to understand the t-distribution. As always Wikipedia provides a useful description: 
+
+> Student's t-distribution (or simply the t-distribution) is any member of a family of continuous probability distributions that arises when estimating the mean of a normally distributed population in situations where the sample size is small and population standard deviation is unknown. It was developed by William Sealy Gosset under the pseudonym Student. Whereas a normal distribution describes a full population, t-distributions describe samples drawn from a full population; accordingly, the t-distribution for each sample size is different, and the larger the sample, the more the distribution resembles a normal distribution.
+
+There's a lot of information in that description! Let's unpack it. 
+
+The t-distribution is described by three parameters: the mean (location), the standard deviation (spread), and the degrees of freedom (area in the tails) ^[Formally, degrees of freedom are the number of values in the final calculation of a statistic that are free to vary.]. Here's what the t-distribution looks like for several different values of degrees of freedom.
+
+```{r, echo = F}
+library(png)
+library(grid)
+img <- readPNG("student_t.png")
+grid.raster(img)
+```
+
+The key parameter for the t-distribution is degrees of freedom (df). Note that a smaller df value creates a distribution with more area in the tails (shorter and wider) than one with a larger df value. Intuitively, this means that you would need a larger t-statistic to achieve the same probability to reject the null hypothesis that the observed mean in our sample is different from the null value.
+
+The key insight about the t-distribution is that it provides the *expected* distribution of t-statistics if we assumed that the null hypothesis was true (that there is no difference between our sample measurments and the population value). Let's use our simulation skills to test this.
+
+```{r}
+t_sims_null <- replicate(n = 1000, 
+                    t.test(x = rnorm(n = 100, mean = 0, sd = 1), mu = 0)$statistic) %>% 
+  data.frame()
+
+  ggplot(aes(x = .), data = t_sims_null) + 
+    geom_line(stat="density", size = 1, color = "darkorange") +
+    geom_line(aes(x = rt(n = 1000, df = 99)), stat = "density", 
+            color = "dodgerblue", size = 1)
+  
+```
+
+Now when we compute a t-statistic for our sample, the question we will ask is: how likely is this t-statistic if we assume that the null hypothesis is true. And since we now have an expected probability distribution of t-statistics, we can compare where our t-value falls in this distribution. Intuitively, if it is towards the center of the probability distribution (where there is a lot of probability mass), then it is more likely that our sample t-value was generated from same process that generated the null distribution. 
+
+To actually do this in R, we can use the `pt()` function, which returns the probability of 
+
+```{r}
+2*pt(-abs(our_t), df = length(samples) - 1) == t.test(x = samples, mu = 6)$p.value
+```
+
+We can also visualize the location of our t-statistic relative to the null t-distribution.
+
+```{r}
+ggplot(aes(x = .), data = t_sims_null) + 
+  geom_line(stat = "density", size = 1, color = "darkorange") +
+  geom_vline(xintercept = our_t, linetype = "dashed")
+```
+
+We can see that the location of our t-statistic is not very far out in the tails of the distribution, meaning that it is unlikely that our measurements were generated by a process that was different from the process that generated the collection of t-statistics in the null distribution (if we assume that there is no difference).
+
+But what would a t-statistic look like if there was a difference between our sample and the population value?
+
+
+```{r}
+samples2_nba <- rnorm(n = 100, mean = 6.5, sd = 1.5)
+sig_t <- t.test(x = samples2_nba, mu = 6)$statistic
+```
+
+```{r}
+ggplot(aes(x = .), data = t_sims_null) + 
+  geom_line(stat = "density", size = 1, color = "darkorange") +
+  geom_vline(xintercept = our_t, linetype = "dashed", color = "darkred", size = 1) +
+  geom_vline(xintercept = sig_t, linetype = "dashed", color = "dodgerblue", size = 1)
+```
