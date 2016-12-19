@@ -112,3 +112,6 @@ Let's test the function.
 ```{r}
 sim_means_plot(n_rep = 10000, n_samp = 100, d = "poisson", lambda = 1)
 ```
+
+
+Now that we have set up the basic tools in our simulation toolkit, we can start writing code to improve our statistical intuitions. This is the focus of the rest of this book.
