@@ -1,19 +1,13 @@
----
-title: "Simulation"
-author: "Kyle MacDonald"
-date: "12/15/2016"
-output: html_document
----
 
-```{r setup, include=FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width = 4.5, fig.height = 4, fig.align = "center")
 library(tidyverse)
 theme_set(theme_classic())
 ```
 
-## Simulating distributions in R
+# Simulation {#simulation}
 
-By the end of the document, you will be able to: 
+By the end of this chapter, you will be able to: 
 
 * explain the value of simulating data and analysis in R
 * use a variety of different methods for generating your own data using R's built-in random number generators

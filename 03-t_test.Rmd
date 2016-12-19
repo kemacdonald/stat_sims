@@ -1,17 +1,13 @@
----
-title: "T-test"
-author: "Kyle MacDonald"
-date: "12/16/2016"
-output: html_document
----
 
-```{r setup, include=FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width = 4.5, fig.height = 4, fig.align = "center")
 library(tidyverse)
 theme_set(theme_classic())
 ```
 
-### The t-test (what, why, and how)
+# T-test {#t-test}
+
+## The t-test (what, why, and how)
 
 The t.test refers to a widely-used set of statistical tools that help us to determine whether two values are "actually" different from each other. (Note the "actually" part will become more clear when we dive into the topic of p-values.) It was developed by William Gosset as a method of statistical quality control to monitor the quality of stout production (there's a neat backstory that I recommend reading!). 
 
@@ -66,7 +62,7 @@ The t-distribution is described by three parameters: the mean (location), the st
 ```{r, echo = F}
 library(png)
 library(grid)
-img <- readPNG("student_t.png")
+img <- readPNG("images/student_t.png")
 grid.raster(img)
 ```
 
