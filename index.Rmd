@@ -1,6 +1,6 @@
 --- 
 title: "Stats 60: Learning stats via simulation"
-author: "Kyle MacDonald"
+author: "Stats 60 TAs"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
@@ -9,7 +9,7 @@ bibliography: [book.bib, packages.bib]
 biblio-style: apalike
 link-citations: yes
 github-repo: stat_sims
-description: "This book aims to teach statistical concepts introductory level, using both a functional and a simulation-based approach."
+description: "This book aims to teach statistical concepts at an introductory level, using a functional and simulation approach."
 ---
 
 # Prerequisites

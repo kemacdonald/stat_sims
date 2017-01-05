@@ -33,8 +33,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-
-<link rel="next" href="simulation.html">
+<link rel="prev" href="simulation.html">
+<link rel="next" href="t-test.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -153,22 +153,92 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="header">
-<h1 class="title">Stats 60: Learning stats via simulation</h1>
-<h4 class="author"><em>Stats 60 TAs</em></h4>
-<h4 class="date"><em>2017-01-01</em></h4>
+<div id="descriptives" class="section level1">
+<h1><span class="header-section-number">Chapter: 3</span> Descriptive statistics and data vizualization</h1>
+<p>As an analyst, often our first goal is to <strong>describe</strong> a data set. What we mean by “describe” here is something like: provide an efficient represenation of the data that is easy for another person to understand. Two effective tools for this task are <em>descriptive statistics</em> and <em>data visualization</em>. It is important to emphasize that the task here is to summarize and communicate with other humans, which means that you need to do more than just figure out how to do the computations. In his statistics book, ognitive scientist, Dan Navarro, has a really nice paragraph on the philosophy of descriptive statistics, so I thought I would include it here:</p>
+<blockquote>
+<p>Thus it is no small thing to say that the first task of the statistician and the scientist is to summarise the data, to find some collection of numbers that can convey to an audience a sense of what has happened. This is the job of descriptive statistics, but it’s not a job that can be told solely using the numbers. You are a data analyst, not a statistical software package. Part of your job is to take these statistics and turn them into a description. When you analyse data, it is not sufficient to list off a collection of numbers. Always remember that what you’re really trying to do is communicate with a human audience. The numbers are important, but they need to be put together into a meaningful story that your audience can interpret. That means you need to think about framing. You need to think about context. And you need to think about the individual events that your statistics are summarising</p>
+</blockquote>
+<p>With that framing in mind, let’s dive into some common statistical techniques that we can use to efficiently describe our data.</p>
+<div id="measures-of-central-tendency" class="section level2">
+<h2><span class="header-section-number">3.1</span> Measures of central tendency</h2>
+<p>Answers the question: Where are the data? What is the long-run average value of repetitions of the same experiment or data-generating process?</p>
+<div id="mean" class="section level3">
+<h3><span class="header-section-number">3.1.1</span> Mean</h3>
+<p>For a data set, the mean provides information about the “central tendency” or the “center of mass” of the data, and is typically denoted using the symbol <span class="math inline">\(\bar{x}\)</span>. Note that if our data set consists of random samples from a larger population, we need to be careful to limit the use of the mean to describe our <em>sample</em> since the population mean ( typically denoted <span class="math inline">\(\mu\)</span>) is different.</p>
+<p>To calculate the mean, we take the sum of each value in our data set and then divide by the number of data points. In formal notation this looks like:</p>
+<p><span class="math display">\[ \bar{x} = \frac{1}{N} \sum_{i=1}^{N} X_i \]</span></p>
+<p>In R, we can quickly compute the mean using the built-in function <code>mean()</code>. Here we are using the Iris data set, which comes with your R installation. The data include a set of measurements in centimeters of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m_plength &lt;-<span class="st"> </span><span class="kw">mean</span>(d$Petal.Length)
+m_plength</code></pre></div>
+<pre><code>## [1] 3.758</code></pre>
+<p>Note that we could also use our dplyr skills to compute the mean like this.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d %&gt;%<span class="st"> </span><span class="kw">summarise</span>(<span class="dt">m =</span> <span class="kw">mean</span>(Petal.Length))</code></pre></div>
+<pre><code>##       m
+## 1 3.758</code></pre>
+<p>Let’s practice our data viz skills and plot the distribution of petal lengths and include the mean as a vertical dashed line.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Petal.Length)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">alpha =</span> <span class="fl">0.7</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> m_plength, <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) +
+<span class="st">  </span><span class="kw">annotate</span>(<span class="dt">geom =</span> <span class="st">&quot;text&quot;</span>, <span class="dt">x =</span> m_plength +<span class="st"> </span>.<span class="dv">7</span>, <span class="dt">y =</span> <span class="dv">20</span>, 
+           <span class="dt">label =</span> <span class="kw">paste</span>(m_plength, <span class="st">&quot;cm&quot;</span>), <span class="dt">size =</span> <span class="dv">6</span>)</code></pre></div>
+<p><img src="bookdown-stats60_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>What do we see? Well, it looks like the mean does tell us about the center location of these data. One way to think about this is is that the mean serves as a “balancig point” of the data distribution, with the number to the left of the mean being balanced by the numbers to the right of the mean.</p>
+<p>But, let’s return to our original goal of providing a useful description of these data. Is <code>m_plength</code> telling us anything useful about these data? Not really. And if we color our plot based on the species of iris, we can see what’s going on here.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Petal.Length, <span class="dt">fill =</span> Species)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">alpha =</span> <span class="fl">0.7</span>) </code></pre></div>
+<p><img src="bookdown-stats60_files/figure-html/unnamed-chunk-12-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>It looks like there are actually three different distributions of petal length in our data set. We can use our dplyr skills to compute the mean for each distribution separately:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ms_petal_length &lt;-<span class="st"> </span>d %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">m =</span> <span class="kw">mean</span>(Petal.Length)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">m =</span> <span class="kw">round</span>(m, <span class="dt">digits =</span> <span class="dv">2</span>))</code></pre></div>
+<p>And add that information to our plot:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Petal.Length, <span class="dt">fill =</span> Species)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">alpha =</span> <span class="fl">0.7</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> m), <span class="dt">data =</span> ms_petal_length, <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">paste</span>(m, <span class="st">&quot;cm&quot;</span>), <span class="dt">x =</span> m +<span class="st"> </span><span class="fl">0.6</span>, <span class="dt">y =</span> <span class="dv">2</span>), <span class="dt">data =</span> ms_petal_length, <span class="dt">size =</span> <span class="dv">5</span>)</code></pre></div>
+<p><img src="bookdown-stats60_files/figure-html/unnamed-chunk-14-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>I would argue that these three numbers – the mean for each type of iris species in the data set – give us a more useful description of the central tendency. And you can say something like, “The average petal length for the setosa species is 1.46.”</p>
 </div>
-<div id="prerequisites" class="section level1">
-<h1><span class="header-section-number">Chapter: 1</span> Prerequisites</h1>
+<div id="median" class="section level3">
+<h3><span class="header-section-number">3.1.2</span> Median</h3>
+</div>
+<div id="mode" class="section level3">
+<h3><span class="header-section-number">3.1.3</span> Mode</h3>
+</div>
+</div>
+<div id="measures-of-variability" class="section level2">
+<h2><span class="header-section-number">3.2</span> Measures of variability</h2>
+<p>Answers the question: How spread out are the data?</p>
+<div id="range" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> Range</h3>
+</div>
+<div id="interquartile-range" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> Interquartile range</h3>
+</div>
+<div id="variance" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Variance</h3>
+</div>
+<div id="standard-deviation" class="section level3">
+<h3><span class="header-section-number">3.2.4</span> Standard deviation</h3>
+</div>
+</div>
+<div id="standard-scores" class="section level2">
+<h2><span class="header-section-number">3.3</span> Standard scores</h2>
 
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-
-<a href="simulation.html" class="navigation navigation-next navigation-unique" aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="simulation.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="t-test.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -196,7 +266,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/rstudio/bookdown-demo/edit/master/index.Rmd",
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/03-descriptives.Rmd",
 "text": "Edit"
 },
 "download": ["bookdown-stats60.pdf"],

@@ -9,9 +9,9 @@ theme_set(theme_classic())
 
 ## The t-test (what, why, and how)
 
-The t.test refers to a widely-used set of statistical tools that help us to determine whether two values are "actually" different from each other. (Note the "actually" part will become more clear when we dive into the topic of p-values.) It was developed by William Gosset as a method of statistical quality control to monitor the quality of stout production (there's a neat backstory that I recommend reading!). 
+The t-test refers to a widely-used set of statistical tools that help us to determine whether two values are "actually" different from each other. (Note the "actually" part will become more clear when we dive into the topic of p-values.) It was developed by William Gosset as a method of statistical quality control to monitor the quality of stout production (there's a neat backstory that I recommend reading!). 
 
-#### How to compute a t-statistic?
+### How to compute a t-statistic?
 
 The algorithm for computing a t-statistic is as follows:
 
@@ -114,7 +114,7 @@ ggplot(aes(x = .), data = t_sims_null) +
   geom_vline(xintercept = sig_t, linetype = "dashed", color = "dodgerblue", size = 1)
 ```
 
-### What about comparing samples from two different groups?
+## Comparing samples from two different groups
 
 $$t = \frac{\bar{x_1} - \bar{x_2}} {s_p \sqrt{2/n}}$$
 
@@ -146,7 +146,7 @@ replicate(1000,
 ```
 
 
-### Exploring the normality assumption of the t-test
+## Exploring the normality assumption of the t-test
 
 The t-test assumes that the underlying process generates data that follows a normal distribution. This makes sense since we have to make these assumptions in order to generate a distribution of expected t-statistics if the null were true.
 
